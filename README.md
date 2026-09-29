@@ -17,17 +17,17 @@ Code examples for the [Road511 Traffic Data API](https://road511.com) — real-t
 |------|----------|-------------|
 | [examples/curl.sh](examples/curl.sh) | curl | All major endpoints in one script |
 | [examples/python_events.py](examples/python_events.py) | Python | Query traffic events with filters |
-| [examples/python_truck_corridor.py](examples/python_truck_corridor.py) | Python | Truck corridor — bridges, weight limits, restrictions along a route |
+| [examples/python_truck_corridor.py](examples/python_truck_corridor.py) | Python | Truck corridor — bridges, weight limits, restrictions near a straight line between two points |
 | [examples/python_features_paging.py](examples/python_features_paging.py) | Python | Read a whole feature set with cursor pagination |
 | [examples/python_feature_details.py](examples/python_feature_details.py) | Python | `has_details` → single and batched detail fetch |
 | [examples/python_scheduled_windows.py](examples/python_scheduled_windows.py) | Python | Planned work by date — the scheduled-window filters |
-| [examples/python_analytics.py](examples/python_analytics.py) | Python | Every analytics endpoint (Pro+ plan) |
+| [examples/python_analytics.py](examples/python_analytics.py) | Python | Every analytics endpoint, including sign message history (Pro+ plan) |
 | [examples/javascript_groups.mjs](examples/javascript_groups.mjs) | JavaScript | Feature and jurisdiction groups, `active`, `has_details` |
 | [examples/javascript_routing.mjs](examples/javascript_routing.mjs) | JavaScript | Truck routing, quota, saved routes |
 | [examples/java/Road511Example.java](examples/java/Road511Example.java) | Java | Events, detail, cursor paging — JDK 11+, no dependencies |
 | [examples/javascript_features.mjs](examples/javascript_features.mjs) | JavaScript | Fetch cameras, signs, weather stations near a location |
 | [examples/go_geojson.go](examples/go_geojson.go) | Go | Stream events as GeoJSON and save to file |
-| [postman/road511.postman_collection.json](postman/road511.postman_collection.json) | Postman | Core read endpoints — import into Postman |
+| [postman/road511.postman_collection.json](postman/road511.postman_collection.json) | Postman | Core read endpoints plus sign history — import into Postman |
 
 Between them these examples cover the keyed API — every endpoint you get with an
 API key. Coverage is collective, not per file: each example is task-shaped and
@@ -71,7 +71,8 @@ or
 | `GET /features?type=ev_charging` | EV charging stations (NREL) |
 | `GET /features/geojson` | Features as GeoJSON (Starter+ plan) |
 | `GET /features/{id}/details` | Full detail for a single feature |
-| `GET /truck/corridor` | All truck restrictions along a route corridor (Pro+ plan) |
+| `GET /truck/corridor` | Truck restrictions in a band around the straight line between two points (Pro+ plan). Follows no road — for a driven route use `POST /routing/route` |
+| `GET /analytics/sign-history` | What a message sign displayed and when it changed, with posted travel times parsed (Pro+ plan) |
 | `GET /jurisdictions` | Every supported jurisdiction — call it for the current list |
 | `GET /stats` | Active event and feature counts |
 
@@ -87,7 +88,7 @@ or
 | `road` | `I-95` | Filter by road name |
 | `limit` | `100` | Results per page (default 100, capped by plan) |
 | `offset` | `50` | Pagination offset. Capped — see Pagination below |
-| `cursor` | `MjAyNi0wOS0w...` | Keyset pagination on `/features`. Pass back the `next_cursor` from the previous response |
+| `cursor` | `MjAyNi0wOS0w...` | Keyset pagination on `/features` and `/analytics/sign-history`. Pass back the `next_cursor` from the previous response |
 
 ## Pagination
 

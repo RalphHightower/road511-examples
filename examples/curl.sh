@@ -42,8 +42,11 @@ echo "=== EV charging stations in Ontario ==="
 curl -s "${AUTH[@]}" "$BASE/features?type=ev_charging&jurisdiction=ON&limit=3" | python3 -m json.tool
 
 echo ""
-echo "=== Truck corridor: I-90 Chicago to Cleveland ==="
-curl -s "${AUTH[@]}" "$BASE/truck/corridor?road=I-90&from_lat=41.88&from_lng=-87.63&to_lat=41.50&to_lng=-81.69&buffer_km=5&limit=5" | python3 -m json.tool
+echo "=== Truck corridor: 5 km band around the straight line Lincoln -> Grand Island, NE ==="
+# The corridor is a buffer around the straight line between the two points; it
+# follows no road and there is no road= parameter. For a driven route use
+# POST /routing/route.
+curl -s "${AUTH[@]}" "$BASE/truck/corridor?from_lat=40.81&from_lng=-96.70&to_lat=40.92&to_lng=-98.34&buffer_km=5&limit=5" | python3 -m json.tool
 
 echo ""
 echo "=== Events as GeoJSON (Starter+ plan) ==="
@@ -102,6 +105,18 @@ echo "=== Batched feature detail (POST) ==="
 curl -s "${AUTH[@]}" -H "Content-Type: application/json" \
   -X POST "$BASE/features/details/batch" \
   -d '{"ids":["ON-cam-155","ON-cam-1434"]}' | python3 -m json.tool | sed -n '1,30p'
+
+echo ""
+echo "=== Sign message history: what a DMS board displayed, and when (Pro+ plan) ==="
+# One board's history, newest first, with posted travel times parsed into
+# travel_times. Take a feature_id from /features?type=signs. A jurisdiction-wide
+# read (jurisdiction=MO) is limited to a 7-day from/to window.
+SIGN=$(curl -s "${AUTH[@]}" "$BASE/features?type=signs&jurisdiction=MO&limit=1" \
+  | python3 -c 'import sys,json; d=json.load(sys.stdin).get("data",[]); print(d[0]["id"] if d else "")')
+if [ -n "$SIGN" ]; then
+  curl -s "${AUTH[@]}" -G "$BASE/analytics/sign-history" --data-urlencode "feature_id=$SIGN" -d limit=5 \
+    | python3 -m json.tool | sed -n '1,30p'
+fi
 
 echo ""
 echo "=== Cursor pagination: page 1, then follow next_cursor ==="

@@ -110,11 +110,35 @@ for row in head(get("/analytics/feature-history", change_type="end_time_change",
     print(f"  {row}")
 
 # --- Weather readings, and whether they correlate with incidents ---
+# /analytics/weather filters by `source` (the feed's source code) or
+# `feature_id` — it has no `jurisdiction` parameter. Earlier versions of this
+# file sent jurisdiction="WA", which was ignored and returned every source.
 print("\n=== Weather readings ===")
-for row in head(get("/analytics/weather", jurisdiction="WA", limit=3)):
+for row in head(get("/analytics/weather", source="WA", limit=3)):
     print(f"  {row}")
 
 print("\n=== Weather / incident correlation ===")
 for row in head(get("/analytics/weather-correlation", jurisdiction="WA",
                     **{"from": FROM.isoformat()}, to=TO.isoformat(), max_dist_km=25, limit=5)):
     print(f"  {row}")
+
+# --- What a message sign displayed, and when it changed ---
+# A row is written only when the text changes, so each message stayed on the
+# board until the next row. travel_times holds every duration found in the
+# message ("10-12 MIN" gives minutes=10, minutes_max=12); it does not say which
+# destination a time is for — read `message` for that. One board by feature_id
+# has no date limit; a whole jurisdiction is limited to a 7-day from/to window.
+print("\n=== Sign message history ===")
+signs = requests.get(f"{BASE_URL}/features", headers=HEADERS,
+                     params={"type": "signs", "jurisdiction": "MO", "limit": 1}).json()
+if signs.get("data"):
+    sign_id = signs["data"][0]["id"]
+    history = get("/analytics/sign-history", feature_id=sign_id, limit=5)
+    for row in head(history, 5):
+        times = ", ".join(
+            f"{t['minutes']}-{t['minutes_max']}" if t.get("minutes_max") else str(t["minutes"])
+            for t in row.get("travel_times", []))
+        print(f"  {row['recorded_at']}  {row['message'][:60]!r}  travel_times=[{times}]")
+    if history and history.get("has_more"):
+        # Page on: pass next_cursor back as cursor until has_more is false.
+        print(f"  ... more: cursor={history['next_cursor'][:16]}...")

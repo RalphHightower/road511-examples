@@ -1,6 +1,14 @@
 """
 Road511 API — Truck corridor query example
-Find bridge clearances, weight restrictions, and truck restrictions along a route.
+Find bridge clearances, weight restrictions, and truck restrictions in a band
+around the STRAIGHT LINE between two points.
+
+The corridor follows no road: it is a buffer (default 5 km, max 50) around the
+line from (from_lat, from_lng) to (to_lat, to_lng). Over a short, straight stretch
+of interstate that is close to the road; over a long or winding one it is not.
+There is no `road` parameter — earlier versions of this file sent `road="I-80"`,
+which the API ignores. For restrictions along an actual driven route, use
+POST /routing/route (see javascript_routing.mjs).
 
 Sign up at https://portal.road511.com for a free API key (Pro plan required for truck data)
 
@@ -28,16 +36,15 @@ def truck_corridor(**params):
     return resp.json()
 
 
-# --- Example: I-80 corridor from NYC to Chicago ---
-print("=== Truck restrictions: I-80 NYC → Chicago ===")
-print("  (bridges, weight limits, truck restrictions within 5km of route)\n")
+# --- Example: Lincoln → Grand Island, NE — I-80 runs close to the straight line ---
+print("=== Truck restrictions: Lincoln, NE → Grand Island, NE ===")
+print("  (bridges, weight limits, truck restrictions within 5 km of the straight line)\n")
 
 data = truck_corridor(
-    road="I-80",
-    from_lat=40.71,   # New York City
-    from_lng=-74.01,
-    to_lat=41.88,     # Chicago
-    to_lng=-87.63,
+    from_lat=40.81,   # Lincoln
+    from_lng=-96.70,
+    to_lat=40.92,     # Grand Island
+    to_lng=-98.34,
     buffer_km=5,
     limit=100,
 )

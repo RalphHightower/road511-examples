@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Road511 Traffic Data API",
-    "description": "Unified REST API for real-time traffic data across 65 US and Canadian jurisdictions.\n\nSign up: https://portal.road511.com\nDocs: https://road511.com/docs.html",
+    "description": "Unified REST API for real-time traffic data across US states, Canadian provinces and regional feeds — call GET /jurisdictions for the current list.\n\nSign up: https://portal.road511.com\nDocs: https://road511.com/docs.html",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -14,7 +14,8 @@
   },
   "variable": [
     { "key": "base_url", "value": "https://api.road511.com/api/v1" },
-    { "key": "api_key", "value": "YOUR_API_KEY" }
+    { "key": "api_key", "value": "YOUR_API_KEY" },
+    { "key": "sign_feature_id", "value": "REPLACE_WITH_A_SIGNS_FEATURE_ID", "description": "Take one from GET /features?type=signs" }
   ],
   "item": [
     {
@@ -167,16 +168,15 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/truck/corridor?road=I-80&from_lat=40.71&from_lng=-74.01&to_lat=41.88&to_lng=-87.63&buffer_km=5&limit=50",
+              "raw": "{{base_url}}/truck/corridor?from_lat=40.81&from_lng=-96.70&to_lat=40.92&to_lng=-98.34&buffer_km=5&limit=50",
               "host": ["{{base_url}}"],
               "path": ["truck", "corridor"],
               "query": [
-                { "key": "road", "value": "I-80", "description": "Road name" },
-                { "key": "from_lat", "value": "40.71" },
-                { "key": "from_lng", "value": "-74.01" },
-                { "key": "to_lat", "value": "41.88" },
-                { "key": "to_lng", "value": "-87.63" },
-                { "key": "buffer_km", "value": "5", "description": "Corridor buffer width in km" },
+                { "key": "from_lat", "value": "40.81", "description": "Lincoln, NE. The corridor is a buffer around the STRAIGHT LINE between the two points; it follows no road and there is no road parameter. For a driven route use POST /routing/route." },
+                { "key": "from_lng", "value": "-96.70" },
+                { "key": "to_lat", "value": "40.92", "description": "Grand Island, NE" },
+                { "key": "to_lng", "value": "-98.34" },
+                { "key": "buffer_km", "value": "5", "description": "Corridor buffer width in km (max 50)" },
                 { "key": "limit", "value": "50" }
               ]
             }
@@ -187,16 +187,40 @@
           "request": {
             "method": "GET",
             "url": {
-              "raw": "{{base_url}}/truck/corridor/geojson?road=I-90&from_lat=41.88&from_lng=-87.63&to_lat=41.50&to_lng=-81.69&buffer_km=5",
+              "raw": "{{base_url}}/truck/corridor/geojson?from_lat=40.81&from_lng=-96.70&to_lat=40.92&to_lng=-98.34&buffer_km=5",
               "host": ["{{base_url}}"],
               "path": ["truck", "corridor", "geojson"],
               "query": [
-                { "key": "road", "value": "I-90" },
-                { "key": "from_lat", "value": "41.88" },
-                { "key": "from_lng", "value": "-87.63" },
-                { "key": "to_lat", "value": "41.50" },
-                { "key": "to_lng", "value": "-81.69" },
+                { "key": "from_lat", "value": "40.81" },
+                { "key": "from_lng", "value": "-96.70" },
+                { "key": "to_lat", "value": "40.92" },
+                { "key": "to_lng", "value": "-98.34" },
                 { "key": "buffer_km", "value": "5" }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics",
+      "item": [
+        {
+          "name": "Sign message history",
+          "request": {
+            "method": "GET",
+            "description": "What a dynamic message sign displayed and when the text changed, newest first, with posted travel times parsed into travel_times. Requires a plan with analytics access (Pro+). One sign by feature_id has no date limit; a jurisdiction-wide read is limited to a 7-day from/to window. Page with next_cursor → cursor.",
+            "url": {
+              "raw": "{{base_url}}/analytics/sign-history?feature_id={{sign_feature_id}}&limit=50",
+              "host": ["{{base_url}}"],
+              "path": ["analytics", "sign-history"],
+              "query": [
+                { "key": "feature_id", "value": "{{sign_feature_id}}", "description": "A signs feature id — take one from GET /features?type=signs" },
+                { "key": "jurisdiction", "value": "MO", "description": "Alternative to feature_id; needs from/to within 7 days", "disabled": true },
+                { "key": "from", "value": "", "description": "YYYY-MM-DD, inclusive", "disabled": true },
+                { "key": "to", "value": "", "description": "YYYY-MM-DD, inclusive", "disabled": true },
+                { "key": "limit", "value": "50", "description": "Max 1000" },
+                { "key": "cursor", "value": "", "description": "next_cursor from the previous page", "disabled": true }
               ]
             }
           }
